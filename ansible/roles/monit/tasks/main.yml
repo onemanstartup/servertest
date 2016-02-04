@@ -1,0 +1,9 @@
+---
+- include: install.yml
+  tags: monit_intall
+
+- include: config.yml
+  tags: monit_config
+
+- include: monitors.yml
+  tags: monit_monitors

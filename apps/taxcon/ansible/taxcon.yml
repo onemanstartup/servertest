@@ -1,0 +1,18 @@
+- hosts: hetzner
+  user: taxcon
+  remote_user: taxcon
+  vars_files:
+    - vars/defaults.yml
+  pre_tasks:
+    - name: check nvm
+      stat: path=~/.nvm
+      register: nvm_result
+      ignore_errors: yes
+      tags: node
+    - name: install nvm
+      shell: curl https://raw.githubusercontent.com/creationix/nvm/v0.22.0/install.sh | bash
+      ignore_errors: yes
+      when: nvm_result|failed
+      tags: node
+  roles:
+

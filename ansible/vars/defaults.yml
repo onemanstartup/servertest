@@ -1,0 +1,122 @@
+users:
+  - username: admin
+    name: Admin
+    groups: ['wheel','systemd-journal']
+    uid: 2000
+    ssh_key:
+      - 'ssh-rsa '
+  - username: taxcon
+    name: taxcon
+    groups: ['deploy']
+    uid: 2300
+    ssh_key:
+      - 'ssh-rsa '
+
+java_packages:
+  - java-1.7.0-openjdk
+
+rvm1_rvm_latest_installer: 'https://raw.githubusercontent.com/wayneeseguin/rvm/master/binscripts/rvm-installer'
+rvm1_rvm_check_for_updates: True
+rvm1_rvm_version: 'latest'
+rvm1_rubies:
+  - 'ruby-2.1.5'
+  - 'ruby-2.1.5-github --url https://github.com/github/ruby.git --branch 2.1'
+  - 'ruby-2.2.0'
+
+app_name: taxcon
+postgresql_databases:
+  - name: "{{ app_name }}_production"
+    # TODO: Don't work for now
+    # uuid_ossp: yes
+    hstore: yes
+    plpgsql: yes
+    pg_stat_statements: yes
+postgresql_users:
+  - name: "{{ app_name }}_production_user"
+postgresql_user_privileges:
+  - name: "{{ app_name }}_production_user"
+    db: "{{ app_name }}_production"
+    priv: "ALL"
+
+elasticsearch_version: 0.90.5
+elasticsearch_heap_size: 1g
+elasticsearch_max_open_files: 65535
+elasticsearch_max_locked_memory: unlimited
+elasticsearch_timezone: "America/New_York"
+elasticsearch_cluster_name: elasticsearch-ansible
+elasticsearch_node_name: elasticsearch-ansible-node
+elasticsearch_node_max_local_storage_nodes: 1
+elasticsearch_index_mapper_dynamic: "true"
+elasticsearch_memory_bootstrap_mlockall: "true"
+elasticsearch_gateway_type: local
+elasticsearch_gateway_recover_after_nodes: 1
+elasticsearch_gateway_recover_after_time: 2m
+elasticsearch_gateway_expected_nodes: 1
+elasticsearch_discovery_zen_minimum_master_nodes: 1
+elasticsearch_discovery_zen_ping_timeout: 30s
+elasticsearch_discovery_zen_ping_multicast_enabled: "true"
+elasticsearch_misc_auto_create_index: "true"
+elasticsearch_misc_query_bool_max_clause_count: 4096
+elasticsearch_misc_disable_delete_all_indices: "true"
+elasticsearch_java_opts: "-XX:-UseSuperWord"
+
+
+newrelic_license_key: "{{newrelic_license_key_production}}"
+
+nodejs_npm_modules:
+  - bower
+  - jshint
+  - forever
+  - coffee-script
+  - uglify-js
+  - stylus
+
+# To enable outsource
+# change allow ip
+# and selinux settings
+# http://stackoverflow.com/questions/23948527/13-permission-denied-while-connecting-to-upstreamnginx
+monit_webinterface_enabled: yes
+nginx_sites:
+  monit:
+    - listen 8080
+    - server_name _
+    - location /monit/ {
+      rewrite ^/monit/(.*) /$1 break;
+      proxy_pass http://localhost:2812/;
+      proxy_set_header Host $host;
+     }
+
+monit_service_delete_unlisted: false
+
+monit_services:
+  - monit_nginx:
+    name: 'nginx'
+    type: 'process'
+    target: /var/run/nginx.pid
+    start: systemctl start nginx
+    stop: systemctl stop nginx
+    rules:
+      - "if 2 restarts within 2 cycles then alert"
+      - "if 5 restarts within 5 cycles then timeout"
+  - monit_postgresql:
+    name: 'postgresql'
+    type: process
+    target: "{{postgresql_external_pid_file}}"
+    start: systemctl start postgresql
+    stop: systemctl stop postgresql
+    rules:
+      - "if failed host localhost port 5432 protocol pgsql then restart"
+      - "if failed host localhost port 5432 protocol pgsql then alert"
+      - "if 2 restarts within 2 cycles then alert"
+      - "if 5 restarts within 5 cycles then timeout"
+  - monit_redis:
+    name: redis
+    type: process
+    target: /var/run/redis/redis.pid
+    start: systemctl start redis
+    stop: systemctl stop redis
+    rules:
+      - "if failed host localhost port 6379 then restart"
+      - "if failed host localhost port 6379 then alert"
+      - "if 2 restarts within 2 cycles then alert"
+      - "if 5 restarts within 5 cycles then timeout"

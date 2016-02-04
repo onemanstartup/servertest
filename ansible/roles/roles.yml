@@ -1,0 +1,19 @@
+# Ansible > 1.8
+# ansible-galaxy install -r roles.yml
+
+# TODO: Hosts
+# https://galaxy.ansible.com/list#/roles/1371
+# TODO: New Relice monitoring
+# TODO: Gitolite
+
+- src: geerlingguy.repo-epel
+- src: geerlingguy.nodejs
+- src: sivel.newrelic
+- src: jdauphant.nginx
+- src: rvm_io.rvm1-ruby
+- src: bobbyrenwick.pip
+- src: geerlingguy.java
+- src: geerlingguy.elasticsearch
+- src: DavidWittman.redis
+- src: patrik.uytterhoeven.PostgreSQL-For-RHEL6x
+- src: valentinogagliardi.docker-rh

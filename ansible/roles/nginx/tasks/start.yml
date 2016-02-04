@@ -1,0 +1,4 @@
+- name: Start the nginx service
+  service: name=nginx state=started enabled=yes
+  tags: [service,nginx]
+

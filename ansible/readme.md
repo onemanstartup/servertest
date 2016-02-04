@@ -1,0 +1,5 @@
+- # TODO: keychains
+- You in this folder
+- If you need sudo, just prepend sudo to commands
+- run `ansible-galaxy install -r roles/roles.yml`
+- run `ansible-playbook server.yml -f 10`

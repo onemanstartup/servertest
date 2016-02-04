@@ -1,0 +1,23 @@
+# - name: PostgreSQL | Extensions | Make sure the postgis extensions are installed
+#   yum:
+#     name: "{{item}}"
+#     state: present
+#   with_items:
+#     - "postgresql-{{postgresql_version}}-pgextwlist"
+#   notify:
+#     - restart postgresql
+
+- name: create temporary directory
+  shell: mktemp -d
+  register: tempdir
+
+- name: get source
+  get_url: url=https://github.com/dimitri/pgextwlist/archive/master.tar.gz dest={{tempdir.stdout}}
+
+- name: ensure pgextwlist is extracted
+  unarchive: src={{tempdir.stdout}}/pgextwlist-master.tar.gz dest={{tempdir.stdout}}
+
+- name: make
+  environment:
+    PATH: /usr/pgsql-{{postgresql_version}}/bin/:{{ ansible_env.PATH }}
+  shell: cd {{tempdir.stdout}}/pgextwlist-master && make && mkdir -p `pg_config --pkglibdir`/plugins && mv pgextwlist.so `pg_config --pkglibdir`/plugins

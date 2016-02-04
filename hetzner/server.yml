@@ -1,0 +1,5 @@
+- hosts: hetzner_server_taxcon
+  user: root
+  roles:
+     - { role: valentinogagliardi.docker-rh,
+               tags: ["docker"] }

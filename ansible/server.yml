@@ -1,0 +1,59 @@
+- hosts: 127.0.0.1
+  connection: local
+  user: root
+  sudo: True
+  vars_files:
+    - vars/defaults.yml
+  pre_tasks:
+    - name: create deploy user group
+      group: name=deploy state=present
+      tags: user
+  roles:
+    - role: users
+      tags: user
+
+    - role: bobbyrenwick.pip
+      tags: new,monitoring
+
+    - role: sivel.newrelic
+      tags: monitoring
+
+    - role: valentinogagliardi.docker-rh
+      tags: docker
+
+    - role: unix
+      tags: user,tools,new
+
+    - role: DavidWittman.redis
+      tags: redis
+
+    - role: geerlingguy.java
+      tags: elasticsearch
+
+    - role: geerlingguy.elasticsearch
+      tags: elasticsearch
+
+    - role: postgresql
+      tags: postgresql
+
+    - role: nginx
+      tags: nginx
+
+    - role: rvm_io.rvm1-ruby
+      tags: new,ruby
+      user: admin
+      sudo: yes
+      sudo_user: root
+
+    - role: geerlingguy.nodejs
+      tags: nodejs
+
+    - role: monit
+      tags: monit
+
+  post_tasks:
+    - name: NPM Install global packages
+      npm: name={{item}} global=yes
+      with_items: nodejs_npm_modules
+      tags: nodejs
+

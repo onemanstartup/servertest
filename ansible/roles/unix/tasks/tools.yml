@@ -1,0 +1,11 @@
+- name: install tools
+  action: yum name={{ item }} state=installed
+  with_items:
+    - curl
+    - htop
+    - git
+    - zsh
+    - tmux
+    - mosh
+    - ImageMagick
+    - ImageMagick-devel

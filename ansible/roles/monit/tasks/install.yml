@@ -1,0 +1,19 @@
+---
+- name: pkg - Install package
+  apt:
+    name: monit
+    update_cache: yes
+    cache_valid_time: 3600
+    state: present
+  when: ansible_os_family == "debian"
+
+- name: yum - Install package
+  yum:
+    name: monit
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: install httpd for webinterface
+  yum: pkg=httpd state=present
+  when: ansible_os_family == "RedHat"
+

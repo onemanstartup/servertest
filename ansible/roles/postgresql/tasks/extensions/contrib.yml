@@ -1,0 +1,4 @@
+- name: Install | Add PostgreSQL repository
+  yum: name={{ pgsql_contrib_repo }} state=present
+  notify:
+    - restart postgresql

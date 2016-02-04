@@ -1,0 +1,73 @@
+# Config file for PostgreSQL
+
+- name: Config | Stop the Cluster
+  command: service postgresql{{ join_char | default("-")}}{{ postgresql_version }} stop
+  when: postgresql_cluster_reset
+
+- name: Config | Reset the cluster - drop the existing one
+  shell: pg_dropcluster --stop {{postgresql_version}} {{postgresql_cluster_name}}
+  sudo: yes
+  sudo_user: postgres
+  when: postgresql_cluster_reset
+
+- name: Config | Reset the cluster - create a new one (with specified encoding and locale)
+  shell: pg_createcluster --start --locale {{postgresql_locale}} -e {{postgresql_encoding}} -d {{postgresql_data_directory}} {{postgresql_version}} {{postgresql_cluster_name}}
+  sudo: yes
+  sudo_user: postgres
+  notify: restart postgresql
+  when: postgresql_cluster_reset
+
+- name: PostgreSQL | Make sure the postgres data directory exists
+  file:
+    path: "{{postgresql_data_directory}}"
+    owner: "{{postgresql_admin_user}}"
+    group: "{{postgresql_admin_user}}"
+    state: directory
+    mode: 0700
+  register: pgdata_dir_exist
+
+- name: Check whether the data directory is already there
+  stat: path={{ postgresql_data_directory }}/base
+  register: data_dir
+
+- name: Initialise Postgresql Database if it is not
+  command: service postgresql{{ join_char | default("-")}}{{ postgresql_version }} initdb {{postgresql_cluster_name}}
+  when: data_dir.stat.exists == false and ansible_distribution_major_version == '6'
+
+- name: Initialise Postgresql Database on Centos/Rhel 7 if it is not
+  command: /usr/pgsql-{{ postgresql_version }}/bin/postgresql{{ postgresql_version|replace('.','') }}-setup initdb
+  when: data_dir.stat.exists == false and ansible_distribution_major_version == '7'
+
+- name: Configure | Update configuration - (pg_hba.conf)
+  template:
+    src: pg_hba.conf.j2
+    dest: "{{postgresql_conf_directory}}/pg_hba.conf"
+    owner: "{{postgresql_admin_user}}"
+    group: "{{postgresql_admin_user}}"
+    mode: 0640
+
+- name: Configure | Update configuration - (postgresql.conf)
+  template:
+    src: postgresql.conf.j2
+    dest: "{{postgresql_conf_directory}}/postgresql.conf"
+    owner: "{{postgresql_admin_user}}"
+    group: "{{postgresql_admin_user}}"
+    mode: 0640
+
+- name: PostgreSQL | pid Directory
+  file:
+    path: "/var/run/postgresql/"
+    owner: "{{postgresql_admin_user}}"
+    group: "{{postgresql_admin_user}}"
+    state: directory
+    mode: 0700
+
+# - name: Reload The PostgreSQL Configuration
+#   command: service postgresql{{ join_char | default("-")}}{{ postgresql_version }} restart
+#
+- name: Ensure PostgreSQL is running
+  service: name=postgresql{{ join_char | default("-")}}{{ postgresql_version }} state=started enabled=yes
+  notify:
+    - restart postgresql
+
+

@@ -1,0 +1,7 @@
+# file: postgresql/tasks/extensions/dev_headers.yml
+- name: PostgreSQL | Extensions | Make sure the development headers are installed
+  yum:
+    name: postgresql-libs
+    state: present
+  notify:
+    - restart postgresql

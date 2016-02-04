@@ -1,0 +1,19 @@
+- hosts: localhost
+  #vars_files:
+  # - ansible/vars/defaults.yml
+  #roles:
+  #  - role: joshualund.ruby-2_1
+  #    tags: deps
+  #   - role: mauricios.MySQL
+  #     tags: deps
+  tasks:
+    - name: Install epel release
+      shell: yum install epel-release
+    - yum: pkg=ImageMagick state=present
+      when: ansible_os_family == "RedHat"
+    - yum: pkg=ImageMagick-devel state=present
+      when: ansible_os_family == "RedHat"
+    - yum: pkg=nodejs state=present
+      when: ansible_os_family == "RedHat"
+    - yum: pkg=curl state=present
+      when: ansible_os_family == "RedHat"

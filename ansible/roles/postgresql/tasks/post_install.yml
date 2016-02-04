@@ -1,0 +1,3 @@
+- name: 'Insert conf pgextwlist'
+  lineinfile: dest="{{postgresql_conf_directory}}/postgresql.conf" line="extwlist.extensions='{{posgtres_whitelisted_extensions}}'"
+
